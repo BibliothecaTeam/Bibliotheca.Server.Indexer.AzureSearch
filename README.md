@@ -1,2 +1,2 @@
-# Bibliotheca.Server.Indexer.AzureSearch
-Microservice for Azure search feature for Bibliotheca.
+# Bibliotheca.Server.Mvc.Middleware
+Common middlewares for Bibliotheca microservices.

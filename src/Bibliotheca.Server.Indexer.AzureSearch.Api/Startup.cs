@@ -75,10 +75,15 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api
             services.AddScoped<ISearchService, SearchService>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, ISearchService searchService)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
+            if (!string.IsNullOrWhiteSpace(Configuration["AzureSearchApiKey"]))
+            {
+                searchService.CreateOrUpdateIndexAsync().Wait();
+            }
 
             app.UseExceptionHandler();
 

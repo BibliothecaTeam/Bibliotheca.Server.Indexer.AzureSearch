@@ -11,12 +11,16 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using Swashbuckle.Swagger.Model;
 using Bibliotheca.Server.Indexer.AzureSearch.Core.Services;
 using Bibliotheca.Server.Indexer.AzureSearch.Core.Parameters;
+using Bibliotheca.Server.ServiceDiscovery.ServiceClient;
+using System;
 
 namespace Bibliotheca.Server.Indexer.AzureSearch.Api
 {
     public class Startup
     {
         public IConfigurationRoot Configuration { get; }
+
+        protected bool UseServiceDiscovery { get; set; } = true;
 
         public Startup(IHostingEnvironment env)
         {
@@ -77,6 +81,11 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, ISearchService searchService)
         {
+            if (UseServiceDiscovery)
+            {
+                RegisterClient();
+            }
+
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
@@ -110,6 +119,33 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api
 
             app.UseSwagger();
             app.UseSwaggerUi();
+        }
+
+        private void RegisterClient()
+        {
+            var serviceDiscoveryConfiguration = Configuration.GetSection("ServiceDiscovery");
+            var clientOptions = new ClientOptions
+            {
+                ServiceId = serviceDiscoveryConfiguration["ServiceId"],
+                ServiceName = serviceDiscoveryConfiguration["ServiceName"],
+                AgentAddress = serviceDiscoveryConfiguration["AgentAddress"],
+                Datacenter = serviceDiscoveryConfiguration["Datacenter"],
+                ClientPort = GetPort()
+            };
+            var serviceDiscovery = new ServiceDiscoveryClient();
+            serviceDiscovery.Register(clientOptions);
+        }
+
+        private int GetPort()
+        {
+            var address = Configuration["server.urls"];
+            if (!string.IsNullOrWhiteSpace(address))
+            {
+                var url = new Uri(address);
+                return url.Port;
+            }
+
+            return 5000;
         }
     }
 }

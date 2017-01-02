@@ -24,6 +24,7 @@
     "Swashbuckle.SwaggerGen": "6.0.0-beta902",
     "Bibliotheca.Server.Mvc.Middleware.Authorization": "1.0.2",
     "Bibliotheca.Server.Mvc.Middleware.Diagnostics": "1.0.2",
+    "Bibliotheca.Server.ServiceDiscovery.ServiceClient": "1.0.2",
     "Bibliotheca.Server.Indexer.Abstractions": "1.0.2",
     "Bibliotheca.Server.Indexer.Client": "1.0.0",
     "Bibliotheca.Server.Indexer.AzureSearch.Core": "1.0.0"

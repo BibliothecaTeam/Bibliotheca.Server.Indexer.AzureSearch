@@ -14,6 +14,7 @@ using Bibliotheca.Server.Indexer.AzureSearch.Core.Parameters;
 using Bibliotheca.Server.ServiceDiscovery.ServiceClient;
 using System;
 using System.Collections.Generic;
+using Bibliotheca.Server.ServiceDiscovery.ServiceClient.Extensions;
 
 namespace Bibliotheca.Server.Indexer.AzureSearch.Api
 {
@@ -77,6 +78,8 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api
                 });
             });
 
+            services.AddServiceDiscovery();
+
             services.AddScoped<ISearchService, SearchService>();
         }
 
@@ -84,7 +87,8 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api
         {
             if (UseServiceDiscovery)
             {
-                RegisterClient();
+                var options = GetServiceDiscoveryOptions();
+                app.RegisterService(options);
             }
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
@@ -122,7 +126,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api
             app.UseSwaggerUi();
         }
 
-        private void RegisterClient()
+        private ServiceDiscoveryOptions GetServiceDiscoveryOptions()
         {
             var serviceDiscoveryConfiguration = Configuration.GetSection("ServiceDiscovery");
 
@@ -130,17 +134,16 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api
             var tagsSection = serviceDiscoveryConfiguration.GetSection("ServiceTags");
             tagsSection.Bind(tags);
 
-            var serviceDiscovery = new ServiceDiscoveryClient();
-            serviceDiscovery.Register((options) =>
-            {
-                options.ServiceOptions.Id = serviceDiscoveryConfiguration["ServiceId"];
-                options.ServiceOptions.Name = serviceDiscoveryConfiguration["ServiceName"];
-                options.ServiceOptions.Address = serviceDiscoveryConfiguration["ServiceAddress"];
-                options.ServiceOptions.Port = Convert.ToInt32(serviceDiscoveryConfiguration["ServicePort"]);
-                options.ServiceOptions.HttpHealthCheck = serviceDiscoveryConfiguration["ServiceHttpHealthCheck"];
-                options.ServiceOptions.Tags = tags;
-                options.ServerOptions.Address = serviceDiscoveryConfiguration["ServerAddress"];
-            });
+            var options = new ServiceDiscoveryOptions();
+            options.ServiceOptions.Id = serviceDiscoveryConfiguration["ServiceId"];
+            options.ServiceOptions.Name = serviceDiscoveryConfiguration["ServiceName"];
+            options.ServiceOptions.Address = serviceDiscoveryConfiguration["ServiceAddress"];
+            options.ServiceOptions.Port = Convert.ToInt32(serviceDiscoveryConfiguration["ServicePort"]);
+            options.ServiceOptions.HttpHealthCheck = serviceDiscoveryConfiguration["ServiceHttpHealthCheck"];
+            options.ServiceOptions.Tags = tags;
+            options.ServerOptions.Address = serviceDiscoveryConfiguration["ServerAddress"];
+
+            return options;
         }
     }
 }

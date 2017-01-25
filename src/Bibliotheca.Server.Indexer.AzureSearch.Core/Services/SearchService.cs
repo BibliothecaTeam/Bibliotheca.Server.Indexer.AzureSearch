@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Bibliotheca.Server.Indexer.Abstractions.DataTransferObjects;
@@ -90,9 +91,13 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
                 searchParameters.Filter = filter;
             }
 
+            var watch = Stopwatch.StartNew();
             DocumentSearchResult<DocumentIndexDto> response = await indexClient.Documents.SearchAsync<DocumentIndexDto>(query, searchParameters);
+            watch.Stop();
 
             var documentSearchResultDto = ChangeToDto(response);
+            documentSearchResultDto.ElapsedMilliseconds = watch.ElapsedMilliseconds;
+
             return documentSearchResultDto;
         }
 
@@ -118,10 +123,18 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
                     searchResultDto.Highlights.Add(highlight.Key, highlight.Value);
                 }
 
+                searchResultDto.Document.FileUri = ReplaceBranchFromUrl(searchResultDto.Document.BranchName, searchResultDto.Document.Url);
+
                 documentSearchResultDto.Results.Add(searchResultDto);
             }
 
             return documentSearchResultDto;
+        }
+
+        private string ReplaceBranchFromUrl(string branchName, string url)
+        {
+            var fileUri = url.Substring(branchName.Length + 1, url.Length - branchName.Length - 1);
+            return fileUri;
         }
 
         private async Task DeleteDocumemntsAsync(SearchIndexClient indexClient, string projectId, string branchName)

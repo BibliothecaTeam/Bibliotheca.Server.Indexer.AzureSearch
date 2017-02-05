@@ -118,6 +118,8 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
                     Document = item.Document
                 };
 
+                searchResultDto.Document.Content = string.Empty;
+
                 foreach (var highlight in item.Highlights)
                 {
                     searchResultDto.Highlights.Add(highlight.Key, highlight.Value);

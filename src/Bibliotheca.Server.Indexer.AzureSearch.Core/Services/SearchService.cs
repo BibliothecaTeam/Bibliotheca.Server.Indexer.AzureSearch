@@ -13,12 +13,11 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
 {
     public class SearchService : ISearchService
     {
-        private const string IndexName = "documents";
-        private readonly IOptions<ApplicationParameters> _applicationParameters;
+        private readonly ApplicationParameters _applicationParameters;
 
         public SearchService(IOptions<ApplicationParameters> applicationParameters)
         {
-            _applicationParameters = applicationParameters;
+            _applicationParameters = applicationParameters.Value;
         }
 
         public async Task CreateOrUpdateIndexAsync()
@@ -175,7 +174,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
         {
             var definition = new Index()
             {
-                Name = IndexName,
+                Name = _applicationParameters.AzureSearchIndexName,
                 Fields = new[]
                 {
                     new Field("id", DataType.String) { IsKey = true },
@@ -195,14 +194,14 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
         private SearchIndexClient GetSearchIndexClient()
         {
             SearchServiceClient serviceClient = GetSearchServiceClient();
-            SearchIndexClient indexClient = serviceClient.Indexes.GetClient(IndexName);
+            SearchIndexClient indexClient = serviceClient.Indexes.GetClient(_applicationParameters.AzureSearchIndexName);
             return indexClient;
         }
 
         private SearchServiceClient GetSearchServiceClient()
         {
-            string searchServiceName = _applicationParameters.Value.AzureSearchServiceName;
-            string apiKey = _applicationParameters.Value.AzureSearchApiKey;
+            string searchServiceName = _applicationParameters.AzureSearchServiceName;
+            string apiKey = _applicationParameters.AzureSearchApiKey;
 
             SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(apiKey));
             return serviceClient;
@@ -210,8 +209,8 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
 
         private bool IsSearchIndexEnabled()
         {
-            if(!string.IsNullOrWhiteSpace(_applicationParameters.Value.AzureSearchServiceName) &&
-                !string.IsNullOrWhiteSpace(_applicationParameters.Value.AzureSearchApiKey))
+            if(!string.IsNullOrWhiteSpace(_applicationParameters.AzureSearchServiceName) &&
+                !string.IsNullOrWhiteSpace(_applicationParameters.AzureSearchApiKey))
             {
                 return true;
             }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Bibliotheca.Server.Indexer.Abstractions.DataTransferObjects;
+using Bibliotheca.Server.Indexer.AzureSearch.Core.Model;
 using Bibliotheca.Server.Indexer.AzureSearch.Core.Parameters;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
@@ -160,7 +161,25 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
         {
             try
             {
-                var batch = IndexBatch.MergeOrUpload(documents);
+                var documentIndex = new List<DocumentModel>();
+                foreach(var document in documents)
+                {
+                    var model = new DocumentModel
+                    {
+                        Id = document.Id,
+                        Url = document.Url,
+                        Title = document.Title,
+                        ProjectId = document.ProjectId,
+                        ProjectName = document.ProjectName,
+                        BranchName = document.BranchName,
+                        Content = document.Content,
+                        Tags = document.Tags
+                    };
+
+                    documentIndex.Add(model);
+                }
+
+                var batch = IndexBatch.MergeOrUpload(documentIndex);
                 await indexClient.Documents.IndexAsync(batch);
             }
             catch (IndexBatchException e)
@@ -184,7 +203,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
                     new Field("projectName", DataType.String) { IsRetrievable = true, IsFilterable = true },
                     new Field("branchName", DataType.String) { IsRetrievable = true, IsFilterable = true },
                     new Field("tags", DataType.Collection(DataType.String)) { IsRetrievable = true, IsFilterable = true, IsFacetable = true },
-                    new Field("content", DataType.String) { IsSearchable = true }
+                    new Field("content", DataType.String) { IsSearchable = true, IsRetrievable = false }
                 }
             };
 

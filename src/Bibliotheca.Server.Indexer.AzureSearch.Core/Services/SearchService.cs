@@ -118,13 +118,15 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
                     Document = item.Document
                 };
 
-                foreach (var highlight in item.Highlights)
+                if(item.Highlights != null)
                 {
-                    searchResultDto.Highlights.Add(highlight.Key, highlight.Value);
+                    foreach (var highlight in item.Highlights)
+                    {
+                        searchResultDto.Highlights.Add(highlight.Key, highlight.Value);
+                    }
                 }
 
                 searchResultDto.Document.FileUri = ReplaceBranchFromUrl(searchResultDto.Document.BranchName, searchResultDto.Document.Url);
-
                 documentSearchResultDto.Results.Add(searchResultDto);
             }
 

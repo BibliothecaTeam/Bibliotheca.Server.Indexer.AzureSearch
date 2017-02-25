@@ -13,5 +13,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Parameters
         public string OAuthAuthority { get; set; }
 
         public string OAuthAudience { get; set; }
+
+        public ServiceDiscovery ServiceDiscovery { get; set; }
     }
 }

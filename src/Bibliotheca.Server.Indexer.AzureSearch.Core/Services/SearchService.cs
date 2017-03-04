@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Bibliotheca.Server.Indexer.Abstractions.DataTransferObjects;
+using Bibliotheca.Server.Indexer.AzureSearch.Core.Model;
 using Bibliotheca.Server.Indexer.AzureSearch.Core.Parameters;
 using Microsoft.Azure.Search;
 using Microsoft.Azure.Search.Models;
@@ -13,12 +14,11 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
 {
     public class SearchService : ISearchService
     {
-        private const string IndexName = "documents";
-        private readonly IOptions<ApplicationParameters> _applicationParameters;
+        private readonly ApplicationParameters _applicationParameters;
 
         public SearchService(IOptions<ApplicationParameters> applicationParameters)
         {
-            _applicationParameters = applicationParameters;
+            _applicationParameters = applicationParameters.Value;
         }
 
         public async Task CreateOrUpdateIndexAsync()
@@ -118,24 +118,25 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
                     Document = item.Document
                 };
 
-                searchResultDto.Document.Content = string.Empty;
-
-                foreach (var highlight in item.Highlights)
+                if(item.Highlights != null)
                 {
-                    searchResultDto.Highlights.Add(highlight.Key, highlight.Value);
+                    foreach (var highlight in item.Highlights)
+                    {
+                        searchResultDto.Highlights.Add(highlight.Key, highlight.Value);
+                    }
                 }
 
-                searchResultDto.Document.FileUri = ReplaceBranchFromUrl(searchResultDto.Document.BranchName, searchResultDto.Document.Url);
-
+                searchResultDto.Document.FileUri = ReplacDocumentFolderUrl(searchResultDto.Document.Url);
                 documentSearchResultDto.Results.Add(searchResultDto);
             }
 
             return documentSearchResultDto;
         }
 
-        private string ReplaceBranchFromUrl(string branchName, string url)
+        private string ReplacDocumentFolderUrl(string url)
         {
-            var fileUri = url.Substring(branchName.Length + 1, url.Length - branchName.Length - 1);
+            var firstPathPart = url.IndexOf("/");
+            var fileUri = url.Substring(firstPathPart + 1, url.Length - firstPathPart - 1);
             return fileUri;
         }
 
@@ -163,7 +164,25 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
         {
             try
             {
-                var batch = IndexBatch.MergeOrUpload(documents);
+                var documentIndex = new List<DocumentModel>();
+                foreach(var document in documents)
+                {
+                    var model = new DocumentModel
+                    {
+                        Id = document.Id,
+                        Url = document.Url,
+                        Title = document.Title,
+                        ProjectId = document.ProjectId,
+                        ProjectName = document.ProjectName,
+                        BranchName = document.BranchName,
+                        Content = document.Content,
+                        Tags = document.Tags
+                    };
+
+                    documentIndex.Add(model);
+                }
+
+                var batch = IndexBatch.MergeOrUpload(documentIndex);
                 await indexClient.Documents.IndexAsync(batch);
             }
             catch (IndexBatchException e)
@@ -177,7 +196,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
         {
             var definition = new Index()
             {
-                Name = IndexName,
+                Name = _applicationParameters.AzureSearchIndexName,
                 Fields = new[]
                 {
                     new Field("id", DataType.String) { IsKey = true },
@@ -187,7 +206,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
                     new Field("projectName", DataType.String) { IsRetrievable = true, IsFilterable = true },
                     new Field("branchName", DataType.String) { IsRetrievable = true, IsFilterable = true },
                     new Field("tags", DataType.Collection(DataType.String)) { IsRetrievable = true, IsFilterable = true, IsFacetable = true },
-                    new Field("content", DataType.String) { IsSearchable = true }
+                    new Field("content", DataType.String) { IsSearchable = true, IsRetrievable = false }
                 }
             };
 
@@ -197,14 +216,14 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
         private SearchIndexClient GetSearchIndexClient()
         {
             SearchServiceClient serviceClient = GetSearchServiceClient();
-            SearchIndexClient indexClient = serviceClient.Indexes.GetClient(IndexName);
+            SearchIndexClient indexClient = serviceClient.Indexes.GetClient(_applicationParameters.AzureSearchIndexName);
             return indexClient;
         }
 
         private SearchServiceClient GetSearchServiceClient()
         {
-            string searchServiceName = _applicationParameters.Value.AzureSearchServiceName;
-            string apiKey = _applicationParameters.Value.AzureSearchApiKey;
+            string searchServiceName = _applicationParameters.AzureSearchServiceName;
+            string apiKey = _applicationParameters.AzureSearchApiKey;
 
             SearchServiceClient serviceClient = new SearchServiceClient(searchServiceName, new SearchCredentials(apiKey));
             return serviceClient;
@@ -212,8 +231,8 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
 
         private bool IsSearchIndexEnabled()
         {
-            if(!string.IsNullOrWhiteSpace(_applicationParameters.Value.AzureSearchServiceName) &&
-                !string.IsNullOrWhiteSpace(_applicationParameters.Value.AzureSearchApiKey))
+            if(!string.IsNullOrWhiteSpace(_applicationParameters.AzureSearchServiceName) &&
+                !string.IsNullOrWhiteSpace(_applicationParameters.AzureSearchApiKey))
             {
                 return true;
             }

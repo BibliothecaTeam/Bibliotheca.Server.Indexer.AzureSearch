@@ -126,16 +126,17 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
                     }
                 }
 
-                searchResultDto.Document.FileUri = ReplaceBranchFromUrl(searchResultDto.Document.BranchName, searchResultDto.Document.Url);
+                searchResultDto.Document.FileUri = ReplacDocumentFolderUrl(searchResultDto.Document.Url);
                 documentSearchResultDto.Results.Add(searchResultDto);
             }
 
             return documentSearchResultDto;
         }
 
-        private string ReplaceBranchFromUrl(string branchName, string url)
+        private string ReplacDocumentFolderUrl(string url)
         {
-            var fileUri = url.Substring(branchName.Length + 1, url.Length - branchName.Length - 1);
+            var firstPathPart = url.IndexOf("/");
+            var fileUri = url.Substring(firstPathPart + 1, url.Length - firstPathPart - 1);
             return fileUri;
         }
 

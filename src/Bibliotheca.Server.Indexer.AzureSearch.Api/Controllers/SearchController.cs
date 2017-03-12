@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bibliotheca.Server.Indexer.Abstractions;
-using Bibliotheca.Server.Indexer.Abstractions.DataTransferObjects;
+using Bibliotheca.Server.Indexer.AzureSearch.Core.DataTransferObjects;
 using Bibliotheca.Server.Indexer.AzureSearch.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +10,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api.Controllers
     [Authorize]
     [ApiVersion("1.0")]
     [Route("api/search")]
-    public class SearchController : Controller, ISearchController
+    public class SearchController : Controller
     {
         private readonly ISearchService _searchService;
 

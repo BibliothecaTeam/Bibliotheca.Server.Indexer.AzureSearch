@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Bibliotheca.Server.Indexer.Abstractions.DataTransferObjects;
+using Bibliotheca.Server.Indexer.AzureSearch.Core.DataTransferObjects;
 using Bibliotheca.Server.Indexer.AzureSearch.Core.Model;
 using Bibliotheca.Server.Indexer.AzureSearch.Core.Parameters;
 using Microsoft.Azure.Search;

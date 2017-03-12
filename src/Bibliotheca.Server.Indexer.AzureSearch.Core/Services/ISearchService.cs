@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bibliotheca.Server.Indexer.Abstractions.DataTransferObjects;
+using Bibliotheca.Server.Indexer.AzureSearch.Core.DataTransferObjects;
 
 namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
 {

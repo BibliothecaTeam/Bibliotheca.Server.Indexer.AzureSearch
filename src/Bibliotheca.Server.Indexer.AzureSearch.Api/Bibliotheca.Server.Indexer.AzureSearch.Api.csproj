@@ -35,7 +35,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="1.0.3" />
     <PackageReference Include="Swashbuckle.SwaggerUi" Version="6.0.0-beta902" />
     <PackageReference Include="Swashbuckle.SwaggerGen" Version="6.0.0-beta902" />
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.6.8" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.6.9" />
     <PackageReference Include="Hangfire.MemoryStorage.Core" Version="1.4.0" />
     <PackageReference Include="Bibliotheca.Server.Mvc.Middleware.Authorization" Version="1.0.2" />
     <PackageReference Include="Bibliotheca.Server.Mvc.Middleware.Diagnostics" Version="1.0.2" />

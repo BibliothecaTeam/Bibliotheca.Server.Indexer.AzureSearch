@@ -18,7 +18,7 @@ version: 1.0.{build}
 #---------------------------------#
 
 # Build worker image (VM template)
-image: Visual Studio 2015
+image: Visual Studio 2017
 
 environment:
   # Don't report back to the mothership

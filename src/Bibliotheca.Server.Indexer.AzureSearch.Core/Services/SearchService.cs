@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Bibliotheca.Server.Indexer.Abstractions.DataTransferObjects;
+using Bibliotheca.Server.Indexer.AzureSearch.Core.DataTransferObjects;
 using Bibliotheca.Server.Indexer.AzureSearch.Core.Model;
 using Bibliotheca.Server.Indexer.AzureSearch.Core.Parameters;
 using Microsoft.Azure.Search;
@@ -34,7 +34,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
                 return;
             }
 
-            SearchIndexClient indexClient = GetSearchIndexClient();
+            ISearchIndexClient indexClient = GetSearchIndexClient();
             await UploadDocumentsAsync(indexClient, documentDtos);
         }
 
@@ -45,7 +45,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
                 return;
             }
 
-            SearchIndexClient indexClient = GetSearchIndexClient();
+            ISearchIndexClient indexClient = GetSearchIndexClient();
             await DeleteDocumemntsAsync(indexClient, projectId, branchName);
         }
 
@@ -57,7 +57,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
 
         public async Task<DocumentSearchResultDto<DocumentIndexDto>> SearchAsync(FilterDto filter, string projectId, string branchName)
         {
-            SearchIndexClient indexClient = GetSearchIndexClient();
+            ISearchIndexClient indexClient = GetSearchIndexClient();
 
             int? skip = null;
             int? top = null;
@@ -76,7 +76,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
             return await SearchDocumentsAsync(indexClient, filter.Query, skip, top, branchFilter);
         }
 
-        private async Task<DocumentSearchResultDto<DocumentIndexDto>> SearchDocumentsAsync(SearchIndexClient indexClient, string query, int? skip = null, int? top = null, string filter = null)
+        private async Task<DocumentSearchResultDto<DocumentIndexDto>> SearchDocumentsAsync(ISearchIndexClient indexClient, string query, int? skip = null, int? top = null, string filter = null)
         {
             var searchParameters = new SearchParameters();
             searchParameters.HighlightFields = new[] { "content" };
@@ -140,7 +140,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
             return fileUri;
         }
 
-        private async Task DeleteDocumemntsAsync(SearchIndexClient indexClient, string projectId, string branchName)
+        private async Task DeleteDocumemntsAsync(ISearchIndexClient indexClient, string projectId, string branchName)
         {
             var documents = await SearchDocumentsAsync(indexClient, "*", null, null, $"projectId eq '{projectId}' and branchName eq '{branchName}'");
             if (documents != null && documents.Results != null && documents.Results.Count > 0)
@@ -160,7 +160,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
             }
         }
 
-        private async Task UploadDocumentsAsync(SearchIndexClient indexClient, IEnumerable<DocumentIndexDto> documents)
+        private async Task UploadDocumentsAsync(ISearchIndexClient indexClient, IEnumerable<DocumentIndexDto> documents)
         {
             try
             {
@@ -213,10 +213,10 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Core.Services
             await serviceClient.Indexes.CreateOrUpdateAsync(definition);
         }
 
-        private SearchIndexClient GetSearchIndexClient()
+        private ISearchIndexClient GetSearchIndexClient()
         {
             SearchServiceClient serviceClient = GetSearchServiceClient();
-            SearchIndexClient indexClient = serviceClient.Indexes.GetClient(_applicationParameters.AzureSearchIndexName);
+            ISearchIndexClient indexClient = serviceClient.Indexes.GetClient(_applicationParameters.AzureSearchIndexName);
             return indexClient;
         }
 

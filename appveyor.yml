@@ -35,7 +35,8 @@ configuration: Release
 build: off
 
 before_build:
-  - appveyor-retry dotnet restore -v Minimal
+  - appveyor-retry dotnet restore "src\Bibliotheca.Server.Indexer.AzureSearch.Core" -v Minimal
+  - appveyor-retry dotnet restore "src\Bibliotheca.Server.Indexer.AzureSearch.Api" -v Minimal
 
 build_script:
   - dotnet build "src\Bibliotheca.Server.Indexer.AzureSearch.Core" -c %CONFIGURATION%

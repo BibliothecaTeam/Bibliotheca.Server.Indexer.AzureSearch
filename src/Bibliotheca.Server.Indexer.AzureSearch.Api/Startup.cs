@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Bibliotheca.Server.Mvc.Middleware.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +14,10 @@ using Bibliotheca.Server.ServiceDiscovery.ServiceClient.Extensions;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Bibliotheca.Server.Indexer.AzureSearch.Jobs;
+using Bibliotheca.Server.Mvc.Middleware.Authorization.SecureTokenAuthentication;
+using Bibliotheca.Server.Mvc.Middleware.Authorization.BearerAuthentication;
+using Bibliotheca.Server.Mvc.Middleware.Authorization.UserTokenAuthentication;
+using Bibliotheca.Server.Indexer.AzureSearch.Api.UserTokenAuthorization;
 
 namespace Bibliotheca.Server.Indexer.AzureSearch.Api
 {
@@ -84,8 +87,9 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api
             });
 
             services.AddServiceDiscovery();
-
             services.AddScoped<IServiceDiscoveryRegistrationJob, ServiceDiscoveryRegistrationJob>();
+
+            services.AddScoped<IUserTokenConfiguration, UserTokenConfiguration>();
             services.AddScoped<ISearchService, SearchService>();
         }
 
@@ -123,6 +127,13 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api
                 Realm = SecureTokenDefaults.Realm
             };
             app.UseSecureTokenAuthentication(secureTokenOptions);
+
+            var userTokenOptions = new UserTokenOptions
+            {
+                AuthenticationScheme = UserTokenDefaults.AuthenticationScheme,
+                Realm = UserTokenDefaults.Realm
+            };
+            app.UseUserTokenAuthentication(userTokenOptions);
 
             var jwtBearerOptions = new JwtBearerOptions
             {

@@ -5,8 +5,15 @@ using Microsoft.Extensions.Configuration;
 
 namespace Bibliotheca.Server.Indexer.AzureSearch.Api
 {
+    /// <summary>
+    /// Main program endpoint.
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Main program method.
+        /// </summary>
+        /// <param name="args">Arguments.</param>
         public static void Main(string[] args)
         {
             var configuration = new ConfigurationBuilder()

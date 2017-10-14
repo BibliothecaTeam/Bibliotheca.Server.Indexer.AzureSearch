@@ -7,7 +7,7 @@
         {
             "taskName": "build",
             "args": [
-                "${workspaceRoot}/src/Bibliotheca.Server.Indexer.AzureSearch.Api/project.json"
+                "${workspaceRoot}/src/Bibliotheca.Server.Indexer.AzureSearch.Api/Bibliotheca.Server.Indexer.AzureSearch.Api.csproj"
             ],
             "isBuildCommand": true,
             "problemMatcher": "$msCompile"

@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Bibliotheca.Server.Indexer.AzureSearch.Api.Controllers
@@ -21,7 +22,7 @@ namespace Bibliotheca.Server.Indexer.AzureSearch.Api.Controllers
         [ProducesResponseType(200, Type = typeof(string))]
         public string Get()
         {
-            var version = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion;
+            var version = Assembly.GetEntryAssembly().GetName().Version.ToString();
             return $"[AzureSearch: {version}] I'm alive and reachable";
         }
     }
